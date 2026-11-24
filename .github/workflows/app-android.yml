@@ -37,6 +37,13 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      # Cache delle dipendenze Gradle: dopo il primo build riuscito non si riscaricano
+      # (meno richieste a Maven Central, che a volte risponde 429 Too Many Requests).
+      # Scrittura attiva anche sui tag, da cui partono i build avviati da Release.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
       - name: Dipendenze e versione
         run: |
           npm ci
@@ -49,7 +56,12 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
+          # fino a 3 tentativi, per gli errori temporanei di rete (es. 429 da Maven Central)
+          for i in 1 2 3; do
+            ./gradlew --no-daemon assembleDebug && exit 0
+            [ $i -lt 3 ] && { echo "::warning::Tentativo $i non riuscito, riprovo tra $((i*60)) secondi"; sleep $((i*60)); }
+          done
+          exit 1
 
       - name: APK release firmato (se ci sono i secret)
         env:
@@ -62,7 +74,11 @@ jobs:
           if [ -z "$KEYSTORE_BASE64" ]; then echo "Nessun keystore: solo APK debug"; exit 0; fi
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           export CBE_KEYSTORE_PATH="$RUNNER_TEMP/release.jks"
-          ./gradlew --no-daemon assembleRelease
+          for i in 1 2 3; do
+            ./gradlew --no-daemon assembleRelease && exit 0
+            [ $i -lt 3 ] && { echo "::warning::Tentativo $i non riuscito, riprovo tra $((i*60)) secondi"; sleep $((i*60)); }
+          done
+          exit 1
 
       - name: Raccoglie gli APK
         run: |
