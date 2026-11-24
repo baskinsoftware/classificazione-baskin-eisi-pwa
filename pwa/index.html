@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- index.html by Daniele Lolli (UncleDan) feat. Claude AI - Release 26.1b6 - 2026-11-21 10-09-33 -->
+<!-- index.html by Daniele Lolli (UncleDan) feat. Claude AI - Release 26.0b19 - 2026-11-24 18-10-10 -->
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
@@ -188,6 +188,7 @@
       </div>
       <div class="malus-block" id="malusA">
         <div class="malus-head"><b>Malus A.A.I.I.</b> <small>(per punteggi tra 21 e 25, con protesi/menomazioni agli arti inferiori)</small></div>
+        <label class="chk prot"><input type="checkbox" id="m_protesi" /> <span><b>Il giocatore ha una o più protesi o menomazioni fisiche agli arti inferiori</b><small>Requisito del Malus A.A.I.I.: senza, le voci qui sotto restano disattivate.</small></span></label>
         <div id="malusAList"></div>
       </div>
     </div>
@@ -337,7 +338,7 @@
 <li>I dati restano <strong>solo sul dispositivo</strong>, nella memoria del browser.</li>
 </ul>
 <h3>App Android e iOS (in prova)</h3>
-<p>Esiste anche una versione <strong>app</strong> per Android e iOS, con le stesse funzioni. Nell'app la <strong>stampa</strong> apre la stampa del telefono (stampante o <em>Salva come PDF</em>) e i file (HTML, XLSX, archivio) e l'invio alla CTL passano dalla <strong>condivisione</strong> del telefono, da cui si salvano o si inviano con l'app di posta. Le versioni di prova sono nella pre-release <em>app-beta</em> del repository.</p>
+<p>Esiste anche una versione <strong>app</strong> per Android e iOS, con le stesse funzioni. Nell'app la <strong>stampa</strong> apre la stampa del telefono (stampante o <em>Salva come PDF</em>) e i file (HTML, XLSX, archivio) e l'invio alla CTL passano dalla <strong>condivisione</strong> del telefono, da cui si salvano o si inviano con l'app di posta. Le versioni di prova sono nelle pre-release del repository (es. <em>v26.0b19</em>).</p>
 <h2>🏠 Schermata iniziale</h2>
 <ul>
 <li><strong>Nuova sessione</strong> (o <strong>Riprendi sessione</strong> se ce n'è una in corso): avvia una sessione di Griglia o di Percorsi.</li>
@@ -380,7 +381,7 @@
 <li>Mentre scegli il livello, sotto l'elenco compare quali <strong>malus</strong> restano possibili.</li>
 <li>Apri la voce <strong>Malus</strong>:<ul>
 <li><strong>Malus H</strong> (altezza inferiore a 155 cm, tolleranza 2 cm, −3 punti): per punteggi <strong>da 5 a 20</strong>.</li>
-<li><strong>Malus A.A.I.I.</strong> (protesi o menomazioni agli arti inferiori, fino a −6 punti): per punteggi <strong>da 21 a 25</strong>.</li>
+<li><strong>Malus A.A.I.I.</strong> (protesi o menomazioni agli arti inferiori, fino a −6 punti): per punteggi <strong>da 21 a 25</strong>. Prima si spunta <strong>«Il giocatore ha una o più protesi o menomazioni fisiche agli arti inferiori»</strong>: senza questa spunta le voci del malus restano disattivate. Nella griglia stampata la casella compare accanto al Malus A.A.I.I.</li>
 <li>La voce si apre anche prima di valutare tutte le abilità: ogni malus è <strong>attivo solo se il suo intervallo è ancora raggiungibile</strong> e si <strong>disattiva in tempo reale</strong> man mano che valuti. Se un malus selezionato diventa impossibile viene tolto, con un avviso.</li>
 </ul>
 </li>
@@ -446,7 +447,7 @@
 <ul>
 <li><strong>Verifica aggiornamenti</strong>: controlla se c'è una nuova versione; per applicarla chiudi e riapri l'app.</li>
 <li><strong>Segnala un problema</strong>: apre una nuova segnalazione sul repository GitHub del progetto, con versione e browser già indicati (serve un account GitHub). Non vengono allegati dati dei giocatori.</li>
-<li>Le versioni di prova hanno il suffisso <strong>b</strong> (es. <code>26.0b4</code>); la versione definitiva non lo ha (es. <code>26.0</code>).</li>
+<li>Le versioni di prova hanno il suffisso <strong>a</strong> (alpha), <strong>b</strong> (beta) o <strong>RC</strong> (es. <code>26.0b19</code>); la versione definitiva non lo ha (es. <code>26.0</code>).</li>
 </ul>
     </article>
   </section>

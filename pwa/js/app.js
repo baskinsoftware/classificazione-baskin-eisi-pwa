@@ -1,4 +1,4 @@
-/* app.js by Daniele Lolli (UncleDan) feat. Claude AI - Release 26.1b6 - 2026-11-21 10-09-33 */
+/* app.js by Daniele Lolli (UncleDan) feat. Claude AI - Release 26.0b19 - 2026-11-24 18-10-10 */
 /* =====================================================================
    Classificazione Baskin EISI (PWA) - logica applicativa
    Autore: Daniele Lolli (UncleDan)
@@ -17,7 +17,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '26.1b6';
+const APP_VERSION = '26.0b19';
 /* app nativa Android/iOS (Capacitor): stesso codice della PWA, vedi js/nativo.js */
 const NATIVO = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
 const PIATTAFORMA = NATIVO ? window.Capacitor.getPlatform() : 'web';
@@ -81,7 +81,7 @@ function nuovoGiocatore(){
     id: uid('g'), creata: new Date().toISOString(), stato: 'bozza', confermata: null, malusVisto: false, stampata: false,
     dati: { squadra:'', numero:'', nome:'', nascita:'', ruolo:'', sezione:'', colore:'', sesso:'', note:'',
             data:'', valutatore:'', gara:'' },
-    livelli, malusH: false, malusA,
+    livelli, malusH: false, malusA, protesiAAII: false,
     percorsi: []     // usato solo nelle sessioni "percorsi"
   };
 }
@@ -118,6 +118,10 @@ function allineaMalus(g, prima){
   if(tolti.length) toast(`${tolti.join(' e ')} non più applicabile: rimosso`);
 }
 
+/* Protesi o menomazione fisica agli arti inferiori: requisito del Malus A.A.I.I.
+   (le valutazioni salvate prima del flag lo ricavano dai malus selezionati) */
+const haProtesi = g => g.protesiAAII ?? MALUS_AAII.some(m => g.malusA[m.id]);
+
 function calcola(g){
   const vals = ABILITA.map(a => g.livelli[a.id]).filter(v => v != null);
   const fatti = vals.length;
@@ -134,7 +138,7 @@ function calcola(g){
   const aPossibile = massimo >= 21;
   let malus = 0;
   if(hApplicabile && g.malusH) malus += MALUS_H.punti;
-  if(aApplicabile) MALUS_AAII.forEach(m => { if(g.malusA[m.id]) malus += m.punti; });
+  if(aApplicabile && haProtesi(g)) MALUS_AAII.forEach(m => { if(g.malusA[m.id]) malus += m.punti; });
   const finale = completa ? base - malus : null;
   const ruolo = ruoloDaPunteggio(finale);
   return { fatti, somma, completa, base, minimo, massimo, hPossibile, aPossibile, hApplicabile, aApplicabile, malus, finale, ruolo };
@@ -445,11 +449,12 @@ function renderMenuAbilita(){
   let mStato, mVal = '–';
   if(!r.completa){
     const poss = [r.hPossibile && 'H', r.aPossibile && 'A.A.I.I.'].filter(Boolean).join(' o ');
-    const sel = (r.hPossibile && g.malusH) || (r.aPossibile && MALUS_AAII.some(m => g.malusA[m.id]));
+    const sel = (r.hPossibile && g.malusH) || (r.aPossibile && haProtesi(g) && MALUS_AAII.some(m => g.malusA[m.id]));
     mStato = `possibile: ${poss}${sel ? ' · selezionato' : ''} (definitivo dopo le 5 abilità)`;
   } else {
     const quale = r.hApplicabile ? 'Malus H' : 'Malus A.A.I.I.';
-    mStato = r.malus ? `${quale} applicato` : `${quale}: nessuno${g.malusVisto ? '' : ' (da verificare)'}`;
+    const senza = r.aApplicabile && g.malusVisto && !haProtesi(g) ? ' (nessuna protesi/menomazione agli arti inferiori)' : '';
+    mStato = r.malus ? `${quale} applicato` : `${quale}: nessuno${senza}${g.malusVisto ? '' : ' (da verificare)'}`;
     mVal = r.malus ? '-' + r.malus : '0';
   }
   const rigaMalus = `<button class="ab-row malus ${r.completa && g.malusVisto ? 'set' : ''}" type="button" id="abMalus" ${conf ? 'disabled' : ''}>
@@ -526,17 +531,23 @@ function confermaLivello(){
    MALUS (con conferma)
    ===================================================================== */
 let pendingMalus = null;
-function apriMalus(){ const g = cur(); pendingMalus = { h: g.malusH, a: clone(g.malusA), note: g.dati.note || '' }; go('malus'); }
+function apriMalus(){ const g = cur(); pendingMalus = { h: g.malusH, a: clone(g.malusA), p: haProtesi(g), note: g.dati.note || '' }; go('malus'); }
 
 function renderMalus(){
   const g = cur(), r = calcola(g);
-  if(!pendingMalus) pendingMalus = { h: g.malusH, a: clone(g.malusA), note: g.dati.note || '' };
+  if(!pendingMalus) pendingMalus = { h: g.malusH, a: clone(g.malusA), p: haProtesi(g), note: g.dati.note || '' };
   $('#appbarTitle').textContent = 'Malus · ' + etichetta(g);
   $('#malusAList').innerHTML = MALUS_AAII.map(m => `
-    <label class="chk"><input type="checkbox" data-malus="${m.id}" ${pendingMalus.a[m.id] ? 'checked' : ''} ${r.aPossibile ? '' : 'disabled'} />
+    <label class="chk"><input type="checkbox" data-malus="${m.id}" ${pendingMalus.a[m.id] ? 'checked' : ''} ${r.aPossibile && pendingMalus.p ? '' : 'disabled'} />
       <span><b>${esc(m.nome)}</b><small>${esc(m.testo)}</small></span><em>-${m.punti} ${m.punti===1?'punto':'punti'}</em></label>`).join('');
   $('#m_h').checked = r.hPossibile && pendingMalus.h; $('#m_h').disabled = !r.hPossibile;
+  $('#m_protesi').checked = r.aPossibile && pendingMalus.p; $('#m_protesi').disabled = !r.aPossibile;
+  $('#malusAList').classList.toggle('na', !pendingMalus.p);
   $$('[data-malus]').forEach(c => { if(c.disabled) c.checked = false; });
+  $$('[data-malus]').forEach(c => c.onchange = () => pendingMalus.a[c.dataset.malus] = c.checked);
+  $('#m_h').onchange = () => pendingMalus.h = $('#m_h').checked;
+  $('#p_note').oninput = () => pendingMalus.note = $('#p_note').value;
+  $('#m_protesi').onchange = () => { pendingMalus.p = $('#m_protesi').checked; if(!pendingMalus.p) MALUS_AAII.forEach(m => pendingMalus.a[m.id] = false); renderMalus(); };
   $('#malusH').classList.toggle('na', !r.hPossibile);
   $('#malusA').classList.toggle('na', !r.aPossibile);
   $('#malusState').textContent = statoMalusTesto(r);
@@ -547,7 +558,8 @@ function confermaMalus(){
   const g = cur();
   const r = calcola(g);
   g.malusH = r.hPossibile && $('#m_h').checked;
-  $$('[data-malus]').forEach(c => g.malusA[c.dataset.malus] = r.aPossibile && c.checked);
+  g.protesiAAII = r.aPossibile && $('#m_protesi').checked;
+  $$('[data-malus]').forEach(c => g.malusA[c.dataset.malus] = r.aPossibile && g.protesiAAII && c.checked);
   g.dati.note = $('#p_note').value;
   g.malusVisto = true;
   salvaSess(); pendingMalus = null;
@@ -823,6 +835,10 @@ function htmlScheda(g, logoB, logoE){
   const box = (on, na) => `<span class="cb ${na?'na':''}">${on && !na ? '&#10005;' : ''}</span>`;
   const righeRuolo = [[3,'10 o inferiore'],[4,'Tra 11 e 20'],[5,'Da 21 a 25']]
     .map(([ru, t]) => `<tr class="${r.ruolo === ru ? 'hit' : ''}"><td>${t}</td><td>${ru}</td></tr>`).join('');
+  /* La griglia deve stare in una pagina: le note che non ci entrano (oltre 7 righe
+     stimate di 100 caratteri) vanno nella seconda pagina, dopo il dettaglio dei livelli. */
+  const noteHtml = `<div class="ps-note"><b>Note:</b> ${esc(d.note).replace(/\n/g,'<br/>')}</div>`;
+  const noteLunghe = String(d.note || '').split('\n').reduce((n, riga) => n + Math.max(1, Math.ceil(riga.length / 100)), 0) > 7;
   const dettagli = ABILITA.map(a => {
     const lv = g.livelli[a.id];
     return `<tr><th>${esc(a.nome)}</th><td class="c">${lv || '–'}</td><td>${lv ? esc(a.livelli[lv-1]) : '<i>non valutata</i>'}</td></tr>`;
@@ -850,17 +866,18 @@ function htmlScheda(g, logoB, logoE){
     </table>
     <table class="ps-malus">
       <tr><th class="l">Malus H <small>(per punteggi tra 5 e 20)</small></th><td>${box(g.malusH, !r.hApplicabile)} H &lt; 155 cm</td><td class="c">-3 punti</td></tr>
-      ${MALUS_AAII.map((m,i) => `<tr>${i===0?`<th class="l" rowspan="${MALUS_AAII.length}">Malus A.A.I.I. <small>(per punteggi tra 21 e 25)</small></th>`:''}<td>${box(g.malusA[m.id], !r.aApplicabile)} ${esc(m.nome)}</td><td class="c">-${m.punti} ${m.punti===1?'punto':'punti'}</td></tr>`).join('')}
+      ${MALUS_AAII.map((m,i) => `<tr>${i===0?`<th class="l" rowspan="${MALUS_AAII.length}">Malus A.A.I.I. <small>(per punteggi tra 21 e 25)</small><small class="ps-prot">${box(haProtesi(g), !r.aApplicabile)}protesi/menomazione agli arti inferiori</small></th>`:''}<td>${box(g.malusA[m.id], !r.aApplicabile || !haProtesi(g))} ${esc(m.nome)}</td><td class="c">-${m.punti} ${m.punti===1?'punto':'punti'}</td></tr>`).join('')}
       <tr class="tot"><th class="l" colspan="2">PUNTEGGIO OTTENUTO DOPO L’APPLICAZIONE DEI MALUS</th><td class="c b big">${r.completa ? r.finale : ''}</td></tr>
     </table>
     <div class="ps-fin">
       <table class="ps-ruolo"><tr><th>PUNTEGGIO FINALE</th><th>RUOLO</th></tr>${righeRuolo}</table>
       <div class="ps-esito ${r.completa ? 'r' + r.ruolo : ''}"><small>Ruolo risultante</small><b>${r.completa ? r.ruolo : '–'}</b></div>
     </div>
-    ${d.note ? `<div class="ps-note"><b>Note:</b> ${esc(d.note).replace(/\n/g,'<br/>')}</div>` : ''}
+    ${d.note ? (noteLunghe ? '<div class="ps-note"><b>Note:</b> <i>vedi la pagina seguente.</i></div>' : noteHtml) : ''}
     <div class="ps-firma"><span>Data ____________________</span><span>Firma del valutatore ______________________________</span></div>
     <h2 class="ps-brk">DETTAGLIO DEI LIVELLI ASSEGNATI</h2>
     <table class="ps-det"><tr><th>Abilità</th><th>Livello</th><th>Descrizione del livello (Griglia di valutazione delle abilità in partita)</th></tr>${dettagli}</table>
+    ${noteLunghe ? '<h2>NOTE</h2>' + noteHtml : ''}
     <footer class="ps-foot">${esc(FONTE)} — compilata con ${esc(APP_NAME)} v${APP_VERSION}${g.confermata ? ', confermata il ' + esc(new Date(g.confermata).toLocaleString('it-IT')) : ''}<br/>
       Il regolamento, i documenti di gara e gli altri documenti si trovano sul sito EISI nel menu Documenti <a href="https://eisi.it/eisi/documenti/">https://eisi.it/eisi/documenti/</a> oppure in Area Download.</footer>
   </div>`;
@@ -869,16 +886,16 @@ function htmlScheda(g, logoB, logoE){
 const CSS_SCHEDA = `
 .ps{font-family:Arial,Helvetica,sans-serif;color:#222;font-size:10.5pt;max-width:190mm;margin:0 auto}
 .ps h1,.ps h2,.ps th{font-family:"Arial Narrow",Arial,sans-serif}
-.ps-head{display:flex;align-items:center;gap:4mm;background:#000;color:#fff;padding:2.5mm 4mm;border-radius:2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.ps-lb{height:20mm;width:20mm}
+.ps-head{display:flex;align-items:center;gap:4mm;background:#000;color:#fff;padding:2mm 4mm;border-radius:2mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.ps-lb{height:17mm;width:17mm}
 .ps-ht{flex:1;text-align:center;font-family:"Arial Narrow",Arial,sans-serif;font-size:11pt;font-weight:bold}
 .ps-ht span{font-weight:normal;font-size:9.5pt}
 .ps-le{display:inline-flex}   /* EISI trasparente su fondo nero, come nel Tabellone */
-.ps-le img{height:18mm;width:18mm}
-.ps h1{font-size:14pt;text-align:center;margin:5mm 0 3mm;color:#2f3740}
+.ps-le img{height:15mm;width:15mm}
+.ps h1{font-size:14pt;text-align:center;margin:3.5mm 0 2.5mm;color:#2f3740}
 .ps h2{font-size:12pt;color:#2f3740;margin:6mm 0 2mm}
-.ps table{border-collapse:collapse;width:100%;margin:0 0 3mm}
-.ps th,.ps td{border:0.3mm solid #8a949e;padding:1.4mm 2mm;vertical-align:middle}
+.ps table{border-collapse:collapse;width:100%;margin:0 0 2.5mm}
+.ps th,.ps td{border:0.3mm solid #8a949e;padding:1.1mm 2mm;vertical-align:middle}
 .ps th{background:#eef0f2;text-align:center;font-size:10pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ps th.l{text-align:left}
 .ps th small{font-weight:normal;display:block}
@@ -888,6 +905,7 @@ const CSS_SCHEDA = `
 .ps-ab td.lv.on span{display:inline-block;min-width:6mm;line-height:6mm;border:0.6mm solid #f4991b;border-radius:50%;color:#222;font-weight:bold;background:#fde9cf;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ps tr.tot th,.ps tr.tot td{background:#e3e6ea;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .ps .cb{display:inline-block;width:3.6mm;height:3.6mm;line-height:3.4mm;border:0.3mm solid #222;text-align:center;font-weight:bold;font-size:9pt;margin-right:1.5mm;vertical-align:-0.6mm}
+.ps-prot{margin-top:1mm;font-weight:bold !important}
 .ps .cb.na{border-color:#bbb;background:repeating-linear-gradient(45deg,#fff,#fff 0.5mm,#ddd 0.5mm,#ddd 1mm)}
 .ps-fin{display:flex;gap:4mm;align-items:stretch}
 .ps-ruolo{flex:1}
@@ -896,8 +914,8 @@ const CSS_SCHEDA = `
 .ps-esito{width:40mm;border:0.6mm solid #2f3740;border-radius:2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:3mm}
 .ps-esito b{font-size:30pt;line-height:1.1;color:#2f3740}
 .ps-esito small{font-size:8.5pt;color:#555}
-.ps-note{border:0.3mm solid #8a949e;padding:2mm;margin-bottom:3mm}
-.ps-firma{display:flex;justify-content:space-between;margin:8mm 0 2mm;font-size:10pt}
+.ps-note{border:0.3mm solid #8a949e;padding:1.5mm 2mm;margin-bottom:2.5mm;font-size:9.5pt}
+.ps-firma{display:flex;justify-content:space-between;margin:6mm 0 0;font-size:10pt}
 .ps-brk{page-break-before:always;break-before:page}
 .ps-det th{text-align:left}
 .ps-det td{font-size:9.5pt}

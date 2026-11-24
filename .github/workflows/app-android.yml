@@ -1,7 +1,9 @@
 # App Android (Capacitor) dalla stessa cartella pwa/.
-#   - push su beta      -> APK di prova nella pre-release «app-beta» (sempre la più recente)
-#   - tag v* (es. v26.0)-> APK nella release del tag
-#   - ogni esecuzione   -> APK anche tra gli artifact dell'esecuzione
+#   - tag v* (es. v26.0b19, v26.0) -> APK nella release del tag (pre-release per a/b/RC);
+#     il workflow Release lo avvia sul tag che crea (interruttore «App Android»)
+#   - lancio manuale     -> APK solo tra gli artifact dell'esecuzione
+#   - ogni esecuzione    -> APK anche tra gli artifact dell'esecuzione
+# Nessuna build automatica sui push dei rami: niente più pre-release «app-beta».
 # Senza secret di firma si produce l'APK «debug» (installabile, firma di sviluppo).
 # Con i secret KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD si
 # produce anche l'APK «release» firmato con la chiave del progetto.
@@ -9,16 +11,7 @@ name: App Android
 
 on:
   push:
-    branches: ["beta", "main"]
     tags: ["v*"]
-    paths:
-      - "pwa/**"
-      - "android/**"
-      - "package.json"
-      - "package-lock.json"
-      - "capacitor.config.json"
-      - "tools/versione-app.mjs"
-      - ".github/workflows/app-android.yml"
   workflow_dispatch:
 
 permissions:
@@ -85,31 +78,9 @@ jobs:
           name: Classificazione-Baskin-${{ env.APP_VER }}-android
           path: out/
 
-      - name: Aggiorna il tag app-beta
-        if: github.ref == 'refs/heads/beta'
-        run: |
-          git tag -f app-beta
-          git push -f origin app-beta
-
-      - name: Pre-release app-beta
-        if: github.ref == 'refs/heads/beta'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: app-beta
-          name: App beta ${{ env.APP_VER }}
-          prerelease: true
-          make_latest: false
-          # Riga iOS tolta finché la compilazione iOS è disattivata (manca il certificato
-          # Apple); da rimettere nel testo qui sotto quando si riattiva app-ios.yml:
-          #   iOS: vedi il file .ipa non firmato, da installare con un tool di sideload.
-          body: |
-            Versione di prova **${{ env.APP_VER }}** dell'app (ramo beta, commit ${{ github.sha }}).
-            Android: scarica l'APK e aprilo dal telefono (consenti l'installazione da questa fonte).
-          files: out/*.apk
-
       - name: Release del tag
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          prerelease: ${{ contains(github.ref_name, 'b') }}
+          prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'RC') }}
           files: out/*.apk

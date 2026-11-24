@@ -151,12 +151,14 @@ le parti che nella WebView non funzionano:
 | Android | `.github/workflows/app-android.yml` (Linux) | APK debug sempre; APK release firmato se ci sono i secret `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` |
 | iOS | `.github/workflows/app-ios.yml` (macOS) | `.ipa` **non firmato** e build per Simulatore — **solo a mano** (Actions → App iOS → Run workflow) finché non c'è un certificato Apple; per la compilazione automatica togliere il commento al blocco `push:` |
 
-A ogni push sul ramo `beta` gli APK finiscono nella pre-release **app-beta**
-(sempre la più recente); con un tag `v*` nella release del tag; ogni esecuzione
-li lascia anche tra gli artifact. L'`.ipa`, quando si lancia a mano il workflow
-iOS dal ramo `beta`, si aggiunge alla stessa pre-release.
+Le app non si compilano più a ogni push: si creano con il workflow **Release**
+(Actions → Release → Run workflow), che crea il tag `v…` e avvia la build sul tag
+con l'interruttore **App Android** (e **App iOS** quando ci sarà il certificato).
+Gli APK finiscono nella release del tag, che per le versioni di prova (`aN`, `bN`,
+`RCN`, es. `v26.0b19`) è una pre-release; ogni esecuzione li lascia anche tra gli
+artifact. Lanciando a mano il workflow di un'app si ottengono solo gli artifact.
 
-- **Android**: dal telefono, apri la pre-release *app-beta* e scarica l'APK
+- **Android**: dal telefono, apri la release della versione e scarica l'APK
   (consenti l'installazione da questa fonte).
 - **iOS**: senza account Apple Developer l'app non si può firmare in automatico.
   L'`.ipa` non firmato si installa con un tool di sideload (Sideloadly, AltStore)
@@ -180,9 +182,10 @@ npm run android     # versione + cap sync + apre Android Studio
 npm run ios         # versione + cap sync + apre Xcode
 ```
 
-La versione delle app segue `APP_VERSION`: `26.0b10` diventa versionName `26.0b10`
-e versionCode `2600010` (la `26.0` finale `2600099`, la `26.0.1` `2600199`); su iOS
-`26.0.0`, build `2600010`. Identificativo, uguale su Android e iOS: `io.github.baskinsoftware.classificazionebaskineisi`, cioè il dominio dell'organizzazione `baskinsoftware.github.io` rovesciato più il nome dell'app (senza trattini né underscore, l'unica forma valida su entrambe le piattaforme).
+La versione delle app segue `APP_VERSION` (vedi [Versioni](#versioni)): `26.0b19` diventa
+versionName `26.0b19` e versionCode `260000019` (la `26.0` finale `260000099`, la `26.0.1`
+`260001099`); su iOS `26.0.0`, build `260000019`. Il build Android controlla che
+versionName e versionCode rispettino la formula. Identificativo, uguale su Android e iOS: `io.github.baskinsoftware.classificazionebaskineisi`, cioè il dominio dell'organizzazione `baskinsoftware.github.io` rovesciato più il nome dell'app (senza trattini né underscore, l'unica forma valida su entrambe le piattaforme).
 
 ## Release
 
@@ -201,20 +204,26 @@ alla release.
 
 ## Versioni
 
-Versionamento allineato al Tabellone Baskin EISI (PWA) e all'app Cast:
-`versione.sottoversione[.patch]`, con la versione maggiore pari all'anno a due
-cifre. La patch si indica solo quando c'è: il primo rilascio è `26.0`, poi `26.0.1`
-per una correzione, `26.1` per nuove funzioni, `27.0` per il primo rilascio
-dell'anno successivo.
+Regola di versioning comune a tutti i progetti Baskin (v3):
 
-Prima di ogni rilascio si pubblicano versioni beta numerate: `26.0b1`, `26.0b2`,
-`26.0b3`… Ogni beta è una build distinta (la cache dell'app si aggiorna e la
-scheda stampata riporta il numero di beta). Quando la beta è approvata si
-rilascia `26.0` senza altre modifiche funzionali. Lo stesso vale per i rilasci
-successivi (`26.1b1` → `26.1`).
+- **Formato** `AA.M[.P[.W]]`: anno a due cifre, numero progressivo di release
+  dell'anno (da 0, non è il mese), patch, e W solo per i fix del wrapper
+  (app Android/iOS) quando la PWA non cambia. Le cifre in coda si scrivono solo se
+  servono: `26.0`, `26.0.1`, `26.0.0.1`.
+- **Pre-release**: alpha `aN`, beta `bN`, release candidate `RCN` (es. `26.0b19`);
+  sono pre-release su GitHub e la PWA va in `/beta`. La finale non ha suffisso.
+- **Tag** `v` + versione (`v26.0b19`, `v26.0`); i vecchi tag non si rinominano.
+- **Build** Android/iOS: `(((AA×100 + M)×100 + P)×10 + W)×100 + contatore`, con
+  contatore 01–98 per le pre-release e 99 per la finale; su iOS la versione visibile
+  è `AA.M.P`.
+
+Finché non esce la prima finale, la versione di destinazione è `26.0`: le beta
+26.1b1–b6 della numerazione precedente sono state rinumerate di seguito
+(26.0b13–b18) e la serie continua da `26.0b19`.
 
 A ogni build aggiornare insieme `APP_VERSION` in `pwa/js/app.js` e `CACHE_NAME`
-in `pwa/service-worker.js`, con il tag git corrispondente (`v26.1b6`, poi `v26.1`).
+in `pwa/service-worker.js`, poi `node tools/versione-app.mjs`, con il tag git
+corrispondente (`v26.0b19`, poi `v26.0`).
 
 ## Pubblicazione su GitHub Pages
 

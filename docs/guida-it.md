@@ -14,7 +14,7 @@ La stessa guida è integrata nell'app (**Guida all'uso** nella schermata inizial
 
 ### App Android e iOS (in prova)
 
-Esiste anche una versione **app** per Android e iOS, con le stesse funzioni. Nell'app la **stampa** apre la stampa del telefono (stampante o *Salva come PDF*) e i file (HTML, XLSX, archivio) e l'invio alla CTL passano dalla **condivisione** del telefono, da cui si salvano o si inviano con l'app di posta. Le versioni di prova sono nella pre-release *app-beta* del repository.
+Esiste anche una versione **app** per Android e iOS, con le stesse funzioni. Nell'app la **stampa** apre la stampa del telefono (stampante o *Salva come PDF*) e i file (HTML, XLSX, archivio) e l'invio alla CTL passano dalla **condivisione** del telefono, da cui si salvano o si inviano con l'app di posta. Le versioni di prova sono nelle pre-release del repository (es. *v26.0b19*).
 
 ## 🏠 Schermata iniziale
 
@@ -60,7 +60,7 @@ Toccando la riga della sessione in cima al pannello giocatori si inseriscono **d
 3. Mentre scegli il livello, sotto l'elenco compare quali **malus** restano possibili.
 4. Apri la voce **Malus**:
     - **Malus H** (altezza inferiore a 155 cm, tolleranza 2 cm, −3 punti): per punteggi **da 5 a 20**.
-    - **Malus A.A.I.I.** (protesi o menomazioni agli arti inferiori, fino a −6 punti): per punteggi **da 21 a 25**.
+    - **Malus A.A.I.I.** (protesi o menomazioni agli arti inferiori, fino a −6 punti): per punteggi **da 21 a 25**. Prima si spunta **«Il giocatore ha una o più protesi o menomazioni fisiche agli arti inferiori»**: senza questa spunta le voci del malus restano disattivate. Nella griglia stampata la casella compare accanto al Malus A.A.I.I.
     - La voce si apre anche prima di valutare tutte le abilità: ogni malus è **attivo solo se il suo intervallo è ancora raggiungibile** e si **disattiva in tempo reale** man mano che valuti. Se un malus selezionato diventa impossibile viene tolto, con un avviso.
 5. Quando le cinque abilità sono valutate compare il **risultato**: punteggio, malus, punteggio finale e **ruolo** (5–10 → ruolo 3; 11–20 → ruolo 4; 21–25 → ruolo 5), con il confronto con il ruolo attuale.
 6. **Conferma finale**: chiede conferma con il riepilogo. Dopo la conferma si attivano **Stampa griglia / PDF**, **Scarica griglia HTML** e **Invia alla CTL**. Per modificare usa **Riapri valutazione**.
@@ -126,4 +126,4 @@ Le valutazioni inviate contano come **stampate** per l'avviso di uscita.
 
 - **Verifica aggiornamenti**: controlla se c'è una nuova versione; per applicarla chiudi e riapri l'app.
 - **Segnala un problema**: apre una nuova segnalazione sul repository GitHub del progetto, con versione e browser già indicati (serve un account GitHub). Non vengono allegati dati dei giocatori.
-- Le versioni di prova hanno il suffisso **b** (es. `26.0b4`); la versione definitiva non lo ha (es. `26.0`).
+- Le versioni di prova hanno il suffisso **a** (alpha), **b** (beta) o **RC** (es. `26.0b19`); la versione definitiva non lo ha (es. `26.0`).

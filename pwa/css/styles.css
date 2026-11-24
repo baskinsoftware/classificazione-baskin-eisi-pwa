@@ -1,4 +1,4 @@
-/* styles.css by Daniele Lolli (UncleDan) feat. Claude AI - Release 26.1b6 - 2026-11-21 10-09-33 */
+/* styles.css by Daniele Lolli (UncleDan) feat. Claude AI - Release 26.0b19 - 2026-11-24 18-10-10 */
 /* =====================================================================
    Classificazione Baskin EISI (PWA) - stili
    Font: Arial; Arial Narrow per le intestazioni.
@@ -119,6 +119,8 @@ input:focus,select:focus,textarea:focus{ outline: 2px solid var(--orange); borde
 .malus-block{ border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; margin: 8px 0; }
 .malus-head small{ color: var(--muted); }
 .malus-block.na{ opacity: .45; }
+#malusAList.na{ opacity: .45; }
+.chk.prot{ border-bottom: 1px dashed var(--line, #d0d4da); padding-bottom: 8px; margin-bottom: 4px; }
 #lvMalus:empty{ display: none; }
 .chk{ display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-top: 1px dashed var(--line); }
 .malus-head + .chk,.malus-head + div .chk:first-child{ border-top: 0; }
