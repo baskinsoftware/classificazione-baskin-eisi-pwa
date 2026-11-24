@@ -19,7 +19,7 @@ dall'*Allegato A al regolamento di gioco - La classificazione dei ruoli nel
 Baskin (rev. 1 settembre 2025)*. Pensata per essere ospitata su **GitHub Pages**.
 
 <p align="center">
-  <a href="https://uncledan.github.io/classificazione-baskin-eisi-pwa/pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
+  <a href="https://baskinsoftware.github.io/classificazione-baskin-eisi-pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
 </p>
 
 ### Funzioni
