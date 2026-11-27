@@ -223,7 +223,7 @@ Finché non esce la prima finale, la versione di destinazione è `26.0`: le beta
 
 A ogni build aggiornare insieme `APP_VERSION` in `pwa/js/app.js` e `CACHE_NAME`
 in `pwa/service-worker.js`, poi `node tools/versione-app.mjs`, con il tag git
-corrispondente (`v26.0b19`, poi `v26.0`).
+corrispondente (`v26.0b20`, poi `v26.0`).
 
 ## Pubblicazione su GitHub Pages
 

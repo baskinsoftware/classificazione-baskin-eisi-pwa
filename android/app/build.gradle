@@ -7,8 +7,8 @@ android {
         applicationId "io.github.baskinsoftware.classificazionebaskineisi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 260000019
-        versionName "26.0b19"
+        versionCode 260000020
+        versionName "26.0b20"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
